@@ -31,43 +31,6 @@ todo-cli <command>
 - `delete`  
   Borrar un todo por ID.
 
-## Ejemplos
-
-- Para imprimir todos los todos:
-  ```bash
-  todo print
-  ```
-
-- Para imprimir los todos completados:
-  ```bash
-  todo print-yes
-  ```
-
-- Para imprimir los todos no completados:
-  ```bash
-  todo print-no
-  ```
-
-- Para añadir un nuevo todo:
-  ```bash
-  todo add
-  ```
-
-- Para encontrar un todo por título:
-  ```bash
-  todo find "Título del todo"
-  ```
-
-- Para marcar un todo como completado:
-  ```bash
-  todo mark <ID>
-  ```
-
-- Para borrar un todo por ID:
-  ```bash
-  todo delete <ID>
-  ```
-
 ## Contribuciones
 
 Este proyecto es extremadamente pequeño, por ende no es relevante contribuir, sin embargo puedes dejar un comentario.
@@ -110,38 +73,6 @@ todo <command>
 
 - `delete`  
   Delete a todo by ID.
-
-## Examples
-
-- To print all todos:
-  ```bash
-  todo print
-  ```
-
-- To print completed todos:
-  ```bash
-  todo print-yes
-  ```
-
-- To add a new todo:
-  ```bash
-  todo add "Todo Title"
-  ```
-
-- To find a todo by title:
-  ```bash
-  todo find "Todo Title"
-  ```
-
-- To mark a todo as completed:
-  ```bash
-  todo mark <ID> yes
-  ```
-
-- To delete a todo by ID:
-  ```bash
-  todo delete <ID>
-  ```
 
 ## Contributing
 
