@@ -33,6 +33,9 @@ todo-cli <command>
 - `delete`  
   Borrar un todo por ID.
 
+- `delete-all`
+  Borrar todas las tareas.
+
 ## Contribuciones
 
 Este proyecto es extremadamente pequeño, por ende no es relevante contribuir, sin embargo puedes dejar un comentario.
@@ -77,6 +80,9 @@ todo-cli <command>
 
 - `delete`  
   Delete a todo by ID.
+
+- `delete-all`
+  Delete all todos.
 
 ## Contributing
 

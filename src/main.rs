@@ -1,4 +1,4 @@
-use std::fs::{ File, OpenOptions , metadata, create_dir_all};
+use std::fs::{ self, create_dir_all, metadata, File, OpenOptions};
 use std::path::{Path, PathBuf};
 use chrono::Local;
 use comfy_table::{modifiers::UTF8_ROUND_CORNERS, presets::UTF8_FULL};
@@ -32,14 +32,33 @@ impl Todo {
     }
 
     fn from_csv_string(record: &str) -> Result<Todo, Box<dyn Error>> {
-        let fields: Vec<&str> = record.split(',').collect();
-
-        let id = fields[0].to_string();
-        let title = fields[1].to_string();
-        let description = fields[2].to_string();
-        let date = fields[3].to_string();
-        let completed = if fields[4].trim() == "Yes".to_string() {true} else {false};
-
+        let mut inside_quotes = false;
+        let mut field_start = 0;
+        let mut fields = Vec::new();
+        
+        for (i, c) in record.chars().enumerate() {
+            match c {
+                '"' => inside_quotes = !inside_quotes,
+                ',' if !inside_quotes => {
+                    fields.push(record[field_start..i].replace("\"\"", "\"").trim_matches('"').to_string());
+                    field_start = i + 1;
+                },
+                _ => {}
+            }
+        }
+        // Push the last field
+        fields.push(record[field_start..].replace("\"\"", "\"").trim_matches('"').to_string());
+    
+        if fields.len() < 5 {
+            return Err("Invalid record format".into());
+        }
+    
+        let id = fields[0].clone();
+        let title = fields[1].clone();
+        let description = fields[2].clone();
+        let date = fields[3].clone();
+        let completed = fields[4].trim() == "Yes";
+    
         Ok(Todo {
             id,
             title,
@@ -101,16 +120,19 @@ impl Csvhelper{
     
     fn get_file_records(&self) -> Result<Vec<String>, Box<dyn Error>> {
         let mut reader = Reader::from_reader(&self.file);
-
         let mut records = Vec::new();
-
+    
         for result in reader.records() {
             let record = result?;
-            records.push(record.iter().collect::<Vec<&str>>().join(","));
+            let quoted_record: Vec<String> = record.iter()
+                .map(|field| format!("\"{}\"", field.replace("\"", "\"\""))) // Quote fields and escape internal quotes
+                .collect();
+            records.push(quoted_record.join(","));
         }
-
+    
         Ok(records)
     }
+    
 
     fn print_todos(&self) {
 
@@ -246,23 +268,18 @@ impl Csvhelper{
             .append(true)
             .open(&self.path)?;
     
-        let mut wtr = WriterBuilder::new()
-            .quote_style(csv::QuoteStyle::Never)
-            .terminator(csv::Terminator::CRLF)
-            .flexible(true)
-            .delimiter(b',')
-            .has_headers(false)
-            .from_writer(&mut file);
+        let record = format!(
+            "\"{}\",\"{}\",\"{}\",\"{}\",\"{}\",",
+            todo.id,
+            todo.title,
+            todo.description,
+            todo.date,
+            if todo.completed { "Yes" } else { "No" }
+        );
     
-        wtr.serialize(Row{
-            id: todo.id.to_string(),
-            title: todo.title.clone(),
-            description: todo.description.clone(),
-            date: todo.date.clone(),
-            completed: if todo.completed { "Yes,".to_string() } else { "No,".to_string() },
-        })?;
+        // Write the record to the file directly, including the comma at the end
+        writeln!(file, "{}", record)?;
     
-        wtr.flush()?;
         Ok(())
     }
 
@@ -379,6 +396,27 @@ impl Csvhelper{
         Ok(())
     }
 
+    fn delete_all_todos(&self) -> io::Result<()> {
+        let file = fs::read_to_string(&self.path)?;
+
+        let mut lines = file.lines();
+
+        if let Some(headers) = lines.next() {
+            let mut file = OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .open(&self.path)?;
+
+            writeln!(file, "{}", headers).unwrap();
+            println!("Tareas borradas correctamente!");
+
+            Ok(())
+        } else {
+            println!("No se pudo realizar la operacion, el archivo esta vacio o no existe!");
+            Ok(())
+        }
+    }
+
 }
 
 fn main() {
@@ -405,13 +443,14 @@ fn main() {
     if args.len() < 2 {
         println!("Uso: todo <command>");
         println!("Commands:");
-        println!("  print      Imprimir los todos");
+        println!("  print        Imprimir los todos");
         println!("  print-yes    Imprimir los todos completados");
         println!("  print-no     Imprimir los todos no completados");
-        println!("  add        Añadir un todo");
-        println!("  find       Encontrar un todo por titulo");
-        println!("  mark       Marcar un todo como completado o incompleto");
-        println!("  delete     Borrar un todo por ID");
+        println!("  add          Añadir un todo");
+        println!("  find         Encontrar un todo por titulo");
+        println!("  mark         Marcar un todo como completado o incompleto");
+        println!("  delete       Borrar un todo por ID");
+        println!("  delete-all   Borrar un todo por ID");
         return;
     }
     
@@ -513,19 +552,40 @@ fn main() {
 
         "print-no" => csv_assistant.print_todos_by_condition("No"),
 
+        "delete-all" => {
+            loop {
+                
+                println!("Quieres borrrar todas las tareas?: (s/n)");
+                let mut user_input: String = String::new();
+                io::stdin()
+                    .read_line(&mut user_input).expect("No entendi bien, puedes ser mas claro?");
+
+                match user_input.trim().to_lowercase().as_str() {
+                    "s" => {
+                        csv_assistant.delete_all_todos().unwrap();
+                        println!("Borrados correctamente.");
+                    },
+
+                    _ => println!("No se han borrado")
+                }
+
+                break;
+
+            }
+        }
+
         _ => {
             
-            println!("Opcion no disponible!");
-            println!("---------------------");
-            println!("Uso: todo-cli <command>");
+            println!("Uso: todo <command>");
             println!("Commands:");
             println!("  print        Imprimir los todos");
             println!("  print-yes    Imprimir los todos completados");
             println!("  print-no     Imprimir los todos no completados");
             println!("  add          Añadir un todo");
-            println!("  find         Encontrar un todo por ID");
+            println!("  find         Encontrar un todo por titulo");
             println!("  mark         Marcar un todo como completado o incompleto");
             println!("  delete       Borrar un todo por ID");
+            println!("  delete-all   Borrar un todo por ID");
 
         }
     }
