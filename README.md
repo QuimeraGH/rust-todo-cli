@@ -1,6 +1,8 @@
 # TodoCLI
 
-`TodoCLI` es una herramienta de línea de comandos escrita en Rust para gestionar tus tareas pendientes (todos). Con esta herramienta, puedes agregar, listar, buscar, marcar y eliminar tareas.
+`TodoCLI` es una herramienta de línea de comandos escrita en Rust para gestionar tus tareas pendientes (todos). Con esta herramienta, puedes agregar, listar, buscar, marcar y eliminar tareas para windows.
+
+Las tareas estan en un archivo data.csv, para su lectura en otros programas, ademas que esta situado en la carpeta de Local de Appdata.
 
 ## Uso
 
@@ -44,6 +46,8 @@ Este proyecto está bajo la Licencia MIT. Consulta el archivo `LICENSE` para má
 # TodoCLI
 
 `TodoCLI` is a command-line tool written in Rust for managing your to-do tasks. With this tool, you can add, list, search, mark, and delete tasks.
+
+The tasks are saved in a data.csv file in the AppData Local folder for its use in another platforms.
 
 ## Usage
 
