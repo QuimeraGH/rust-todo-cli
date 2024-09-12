@@ -52,7 +52,7 @@ The tasks are saved in a data.csv file in the AppData Local folder for its use i
 ## Usage
 
 ```bash
-todo <command>
+todo-cli <command>
 ```
 
 ## Commands
